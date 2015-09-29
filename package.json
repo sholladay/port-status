@@ -1,6 +1,6 @@
 {
   "name": "port-status",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Run code depending on whether it could bind to a port.",
   "homepage": "https://github.com/sholladay/port-status",
   "author": {
