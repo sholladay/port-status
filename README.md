@@ -14,17 +14,49 @@ Get it into your program.
 var portStatus = require('port-status');
 ````
 
-Retrieve the status of a port, asynchronously, as a lowercase string.
-
+Get a promise for the status of a port, as a lowercase string.
 ````javascript
-function portCheck(status) {
-    console.log('Status:', status);
-}
 // On OS X without sudo, this will print 'Status: denied'.
 portStatus(
     80,           // port you want to check
     '127.0.0.1',  // optional hostname to try to bind on
-    portCheck     // callback for us to report back to
+)
+.then(
+    function (status) {
+        console.log('Status:', status);
+    }
+)
+````
+
+Port status passes all arguments to Node's [net.Server#listen()](https://nodejs.org/api/net.html#net_server_listen_options_callback), so you can also use an object, for example.
+````javascript
+portStatus(
+    {
+        port     : 80,
+        hostname : '127.0.0.1',
+    }
+)
+.then(
+    function (status) {
+        console.log('Status:', status);
+    }
+)
+````
+
+Make your .then() handler conditional, by using convenience methods that reject
+their promises if the port status is not exactly what you want.
+````javascript
+// On OS X with sudo, this will not print anything, since you will not be denied.
+// The promise will be rejected, you could use .catch() to print something.
+portStatus(
+    80,
+    '127.0.0.1',
+)
+.ifDenied()
+.then(
+    function (status) {
+        console.log('Status:', status);
+    }
 )
 ````
 
