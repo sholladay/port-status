@@ -20,7 +20,7 @@ Get a promise for the status of a port, as a lowercase string.
 // If you use sudo and it is free, then 'Status: ok'.
 portStatus(
     80,           // port you want to check
-    '127.0.0.1',  // optional hostname to try to bind on
+    '127.0.0.1'   // optional hostname to try to bind on
 )
 .then(
     function (status) {
@@ -34,7 +34,7 @@ Port status passes all arguments to Node's [net.Server#listen()](https://nodejs.
 portStatus(
     {
         port     : 80,
-        hostname : '127.0.0.1',
+        hostname : '127.0.0.1'
     }
 )
 .then(
@@ -51,7 +51,7 @@ their promises if the port status is not exactly what you want.
 // promise will reject, and you could use .catch() to print something.
 portStatus(
     80,
-    '127.0.0.1',
+    '127.0.0.1'
 )
 .ifBusy()
 .then(
