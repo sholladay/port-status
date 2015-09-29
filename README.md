@@ -16,7 +16,8 @@ var portStatus = require('port-status');
 
 Get a promise for the status of a port, as a lowercase string.
 ````javascript
-// On OS X without sudo, this will print 'Status: denied'.
+// On OS X without sudo, this will log 'Status: denied'.
+// If you use sudo and it is free, then 'Status: ok'.
 portStatus(
     80,           // port you want to check
     '127.0.0.1',  // optional hostname to try to bind on
@@ -46,13 +47,13 @@ portStatus(
 Make your .then() handler conditional, by using convenience methods that reject
 their promises if the port status is not exactly what you want.
 ````javascript
-// On OS X with sudo, this will not print anything, since you will not be denied.
-// The promise will be rejected, you could use .catch() to print something.
+// This will only log something if the port is already in use. Otherwise, the
+// promise will reject, and you could use .catch() to print something.
 portStatus(
     80,
     '127.0.0.1',
 )
-.ifDenied()
+.ifBusy()
 .then(
     function (status) {
         console.log('Status:', status);
