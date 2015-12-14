@@ -5,25 +5,25 @@
 
 'use strict';
 
-var net = require('net'),
+const
+    Promise = require('bluebird'),
+    net = require('net'),
     // Mapping of error codes we receive when a port cannot be used
     // to the results we deliver to our users.
     status = {
-        'EACCES'     : 'denied',
-        'EADDRINUSE' : 'busy'
-    },
-    key;
+        EACCES     : 'denied',
+        EADDRINUSE : 'busy'
+    };
 
-function portStatus() {
+function check() {
 
-    var args = Array.prototype.slice.call(arguments),
-        server = net.createServer();
+    const server = net.createServer();
 
     function startServer(resolve, reject) {
 
         function onError(err) {
 
-            var meaning = status[err.code];
+            const meaning = status[err.code];
 
             // Is it an error we recognize? If so, we now know the
             // port status and that is what we are here for, so it
@@ -49,14 +49,18 @@ function portStatus() {
             server.close(onClose);
         }
 
-        args.push(onListening);
-
         server.once('error', onError);
-        server.listen.apply(server, args);
+        server.listen(...arguments, onListening);
     }
 
     return new Promise(startServer);
 }
+
+function portStatus() {
+    return check(...arguments);
+}
+
+portStatus.check = check;
 
 // Create functions that check port status, but reject their promises if the
 // determined port status is not the same as what they expect. Thus enabling
@@ -65,10 +69,8 @@ function makeIfMethod(expectedStatus) {
 
     return function () {
 
-        var args = Array.prototype.slice.call(arguments);
-
         // Promise a specific port status.
-        return portStatus.apply(portStatus, args)
+        return portStatus.check(...arguments)
             .then(
                 function (status) {
                     if (status !== expectedStatus) {
@@ -86,7 +88,7 @@ function makeIfMethod(expectedStatus) {
 }
 
 // Make convenience methods like ifBusy() for error cases.
-for (key in status) {
+for (let key in status) {
     if (Object.prototype.hasOwnProperty.call(status, key)) {
         portStatus['if' + status[key][0].toUpperCase() + status[key].substring(1)] = makeIfMethod(status[key]);
     }

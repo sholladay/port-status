@@ -13,8 +13,8 @@
   },
   "engineStrict": true,
   "engines": {
-    "node": "~0.10.36",
-    "npm": "~2.7.0"
+    "node": "^5.0.0",
+    "npm": "^3.0.0"
   },
   "repository": {
     "type": "git",
