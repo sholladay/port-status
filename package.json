@@ -1,7 +1,7 @@
 {
   "name": "port-status",
   "version": "1.0.2",
-  "description": "Run code depending on whether it could bind to a port.",
+  "description": "Detect port availability.",
   "homepage": "https://github.com/sholladay/port-status",
   "main": "index.js",
   "author": {
