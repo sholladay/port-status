@@ -6,7 +6,6 @@
 'use strict';
 
 const
-    Promise = require('bluebird'),
     net = require('net'),
     // Mapping of error codes we receive when a port cannot be used
     // to the results we deliver to our users.
