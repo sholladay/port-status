@@ -1,6 +1,6 @@
 {
   "name": "port-status",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Detect port availability.",
   "homepage": "https://github.com/sholladay/port-status",
   "main": "index.js",
