@@ -18,9 +18,9 @@ function check() {
 
     const server = net.createServer();
 
-    function startServer(resolve, reject) {
+    return new Promise((resolve) => {
 
-        function onError(err) {
+        server.once('error', (err) => {
 
             const meaning = status[err.code];
 
@@ -29,30 +29,21 @@ function check() {
             // is not an error by our definition.
             if (meaning) {
                 resolve(meaning);
+                return;
             }
-            else {
-                reject(err);
-            }
-        }
 
-        function onClose(err) {
-            if (err) {
-                reject(err);
-            }
-            else {
+            throw err;
+        });
+
+        server.listen(...arguments, () => {
+            server.close(() => {
+                if (err) {
+                    throw err;
+                }
                 resolve('ok');
-            }
-        }
-
-        function onListening() {
-            server.close(onClose);
-        }
-
-        server.once('error', onError);
-        server.listen(...arguments, onListening);
-    }
-
-    return new Promise(startServer);
+            });
+        });
+    });
 }
 
 function portStatus() {
@@ -70,19 +61,17 @@ function makeIfMethod(expectedStatus) {
 
         // Promise a specific port status.
         return portStatus.check(...arguments)
-            .then(
-                function (status) {
-                    if (status !== expectedStatus) {
-                        throw new Error(
-                            'Port status \"' + status +
-                            '\", not \"' + expectedStatus + '\"'
-                        );
-                    }
-
-                    // The status must be as we expect, so pass it along.
-                    return status;
+            .then((status) => {
+                if (status !== expectedStatus) {
+                    throw new Error(
+                        'Port status \"' + status +
+                        '\", not \"' + expectedStatus + '\"'
+                    );
                 }
-            );
+
+                // The status must be as we expect, so pass it along.
+                return status;
+            });
     };
 }
 
