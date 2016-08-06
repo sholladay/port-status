@@ -5,82 +5,72 @@
 
 'use strict';
 
-const
-    net = require('net'),
-    // Mapping of error codes we receive when a port cannot be used
-    // to the results we deliver to our users.
-    status = {
-        EACCES     : 'denied',
-        EADDRINUSE : 'busy'
-    };
+const net = require('net');
+// Mapping of error codes we receive when a port cannot be used
+// to the results we deliver to our users.
+const status = {
+    EACCES     : 'denied',
+    EADDRINUSE : 'busy'
+};
 
-function check() {
-
+const check = (...args) => {
     const server = net.createServer();
 
-    return new Promise((resolve) => {
-
+    return new Promise((resolve, reject) => {
         server.once('error', (err) => {
-
-            const meaning = status[err.code];
-
             // Is it an error we recognize? If so, we now know the
             // port status and that is what we are here for, so it
             // is not an error by our definition.
+            const meaning = status[err.code];
             if (meaning) {
                 resolve(meaning);
                 return;
             }
 
-            throw err;
+            reject(err);
         });
 
-        server.listen(...arguments, () => {
-            server.close(() => {
+        server.listen(...args, () => {
+            server.close((err) => {
                 if (err) {
-                    throw err;
+                    reject(err);
                 }
                 resolve('ok');
             });
         });
     });
-}
+};
 
-function portStatus() {
-    return check(...arguments);
-}
+const portStatus = (...args) => {
+    return check(...args);
+};
 
 portStatus.check = check;
 
 // Create functions that check port status, but reject their promises if the
 // determined port status is not the same as what they expect. Thus enabling
 // conditional .then() handlers to be used.
-function makeIfMethod(expectedStatus) {
-
-    return function () {
-
+const makeIfMethod = (expectedStatus) => {
+    return (...args) => {
         // Promise a specific port status.
-        return portStatus.check(...arguments)
-            .then((status) => {
-                if (status !== expectedStatus) {
-                    throw new Error(
-                        'Port status \"' + status +
-                        '\", not \"' + expectedStatus + '\"'
-                    );
+        return portStatus.check(...args)
+            .then((actualStatus) => {
+                if (actualStatus === expectedStatus) {
+                    return actualStatus;
                 }
 
-                // The status must be as we expect, so pass it along.
-                return status;
+                throw new Error(
+                    `Port status "${actualStatus}", not "${expectedStatus}"`
+                );
             });
     };
-}
+};
 
 // Make convenience methods like ifBusy() for error cases.
-for (let key in status) {
-    if (Object.prototype.hasOwnProperty.call(status, key)) {
-        portStatus['if' + status[key][0].toUpperCase() + status[key].substring(1)] = makeIfMethod(status[key]);
-    }
-}
+Object.keys(status).forEach((key) => {
+    portStatus['if' + status[key][0].toUpperCase() + status[key].substring(1)] = makeIfMethod(status[key]);
+});
+
 // Make convenience methods for non-error cases.
 portStatus.ifOk = makeIfMethod('ok');
 
